@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/javaee" 
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        version="2.1">
+        
+    <tlib-version>1.0</tlib-version> 
+    <short-name>mm</short-name>
+    <uri>http://techphoria.net/markup-machine</uri>
+	
+	<tag>
+		<description>The Templating Tag for JSP</description>
+		<name>template</name>
+		<tag-class>net.techphoria.markup.MarkupMachineTag</tag-class>
+		<body-content>JSP</body-content>
+		
+		<attribute>
+			<description>The URL where the template should be loaded from.</description>
+			<name>url</name>
+			<required>true</required>
+		</attribute>
+	</tag>
+</taglib>
