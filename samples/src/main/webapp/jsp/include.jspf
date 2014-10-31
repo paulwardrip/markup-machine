@@ -1,0 +1,15 @@
+<%@ page import="net.techphoria.markup.samples.*,java.util.*" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<% pageContext.setAttribute("author", new Project()); %>
+<% pageContext.setAttribute("map", new HashMap<String, Object>()); %>
+
+<c:set var="first" target="author" value="Paul" />
+<c:set var="last" target="author" value="Wardrip" />
+<c:set var="project" target="author" value="MarkupMachine" />
+<c:set var="version" target="author" value="Version" />
+
+<c:set var="first" target="map" value="Paul" />
+<c:set var="last" target="map" value="Wardrip" />
+<c:set var="project" target="map" value="MarkupMachine" />
+<c:set var="version" target="map" value="Version" />
