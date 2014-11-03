@@ -2,6 +2,8 @@ package net.techphoria.markup;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,42 +25,68 @@ public class MarkupMachineTag extends BodyTagSupport {
 	private static final Logger LOG = Logger.getLogger(MarkupMachineTag.class.getName());
 	
 	private String url;
+	
+	private String json;
 
-	private Map<String, Object> map;
-
-	public String getUrl() {
-		return url;
-	}
-
+	private Object obj;
+	
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	public void setData(Object data) {
+		this.obj = data;
 	}
 
-	public void setMap(Map<String, Object> map) {
-		this.map = map;
+	public void setJson(String json) {
+		this.json = json;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public int doAfterBody() throws JspException {
 		BodyContent content = this.getBodyContent();
-		Map<String, Object> data;
-		if (map != null) {
-			data = map;
+		Map<Object, Object> data;
+		
+		if (obj != null) {
+			if (obj instanceof Map) { 
+				data = (Map <Object, Object>) obj;
+			} else {
+				data = extract(obj);
+			}
+			
+		} else if (json != null) {
+			data = parseJSON(json);
+			
 		} else {
-			data = parseBodyJSON(content);
+			data = parseJSON(content.getString());
 		}
 
 		return replacePlaceholders(content, data);
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> parseBodyJSON(BodyContent content) {
+	private Map<Object, Object> extract(Object object) {
+		ObjectMapper mapper = new ObjectMapper();
+		if (mapper.canSerialize(object.getClass())) {
+			StringWriter writer = new StringWriter();
+			try {
+				mapper.writeValue(writer, object);
+				String json = writer.getBuffer().toString();
+				writer.close();
+				return parseJSON(json);
+				
+			} catch (Exception ex) {
+				LOG.log(Level.WARNING, "Could Not Serialize an Object", ex);
+			}
+		}
+		
+		return Collections.EMPTY_MAP;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Map<Object, Object> parseJSON(String data) {
 		try {
-			String data = content.getString();
 			if (data != null && data.length() > 0) {
 				ObjectMapper mapper = new ObjectMapper();
 				mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
@@ -71,12 +99,12 @@ public class MarkupMachineTag extends BodyTagSupport {
 		return null;
 	}
 
-	private int replacePlaceholders(BodyContent content, Map<String, Object> data) throws JspException {
+	private int replacePlaceholders(BodyContent content, Map<?, ?> data) throws JspException {
 		try {
 			String html = loadTemplate();
 			if (data != null && data.size() > 0) {
-				for (Entry<String,Object> entry : data.entrySet()) {
-					html = html.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+				for (Entry<?,?> entry : data.entrySet()) {
+					html = html.replace("{" + String.valueOf(entry.getKey()) + "}", String.valueOf(entry.getValue()));
 				}
 			}
 			content.getEnclosingWriter().write(html);
